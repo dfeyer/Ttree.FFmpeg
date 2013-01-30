@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.3.3",
-        "symfony/process": ">=2.0,<=2.2",
+        "symfony/process": ">=2.1.0,<2.3-dev",
         "typo3/flow": "*"
     },
     "minimum-stability": "dev",
