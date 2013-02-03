@@ -42,7 +42,7 @@ class FFmpegOutputProvider extends AbstractOutputProvider {
 
 		// File doesn't exist
 		if (!file_exists($this->movieFile)) {
-			throw new InvalidArgumentException('Movie file not found', self::$EX_CODE_FILE_NOT_FOUND);
+			throw new InvalidArgumentException(sprintf('Movie file not found (%s)', $this->movieFile), self::$EX_CODE_FILE_NOT_FOUND);
 		}
 
 		// Get information about file from ffmpeg
