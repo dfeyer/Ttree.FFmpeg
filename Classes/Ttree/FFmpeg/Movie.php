@@ -8,6 +8,7 @@ namespace Ttree\FFmpeg;
  * the terms of the MIT license.                                          *
  *                                                                        */
 
+use Ttree\FFmpeg\Exception\InvalidArgumentException;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Media\Domain\Model\Image;
 
@@ -271,8 +272,12 @@ class Movie implements \Serializable {
 	 * Setting provider implementation
 	 *
 	 * @param OutputProvider\OutputProviderInterface $outputProvider
+	 * @throws Exception\InvalidArgumentException
 	 */
 	public function setProvider(OutputProvider\OutputProviderInterface $outputProvider) {
+		if (!@is_file($this->movieFile)) {
+			throw new InvalidArgumentException('Ttree.Ffmpeg support only local file storage', 1373907629);
+		}
 		$this->provider = $outputProvider;
 		$this->provider->setMovieFile($this->movieFile);
 		$this->fileSize = filesize($this->movieFile);
