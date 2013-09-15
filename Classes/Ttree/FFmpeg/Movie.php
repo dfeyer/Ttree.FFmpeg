@@ -275,7 +275,9 @@ class Movie implements \Serializable {
 	public function setProvider(OutputProvider\OutputProviderInterface $outputProvider) {
 		$this->provider = $outputProvider;
 		$this->provider->setMovieFile($this->movieFile);
-		$this->fileSize = filesize($this->movieFile);
+		if (@is_file($this->movieFile)) {
+			$this->fileSize = filesize($this->movieFile);
+		}
 		$this->output = $this->provider->getOutput();
 	}
 
