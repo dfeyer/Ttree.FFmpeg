@@ -13,8 +13,6 @@ use Ttree\Medialib\Core\Exception;
 /**
  * @api
  */
-class InvalidArgumentException extends \LogicException implements ExceptionInterface {
+class LogicException extends \LogicException implements ExceptionInterface {
 
 }
-
-?>
