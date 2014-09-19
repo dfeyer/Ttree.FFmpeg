@@ -258,13 +258,22 @@ class Movie implements \Serializable {
 	 * @param string $ffmpegBinary
 	 */
 	public function __construct($moviePath, OutputProvider\OutputProviderInterface $outputProvider = NULL, $ffmpegBinary = '/usr/local/bin/ffmpeg') {
-		$this->movieFile    = $moviePath;
-		$this->frameNumber  = 0;
+		$this->movieFile = $moviePath;
+		$this->frameNumber = 0;
 		$this->ffmpegBinary = $ffmpegBinary;
 		if ($outputProvider === NULL) {
 			$outputProvider = new OutputProvider\FFmpegOutputProvider($ffmpegBinary);
 		}
 		$this->setProvider($outputProvider);
+	}
+
+	/**
+	 * Getting current provider implementation
+	 *
+	 * @return OutputProvider
+	 */
+	public function getProvider() {
+		return $this->provider;
 	}
 
 	/**
@@ -279,78 +288,6 @@ class Movie implements \Serializable {
 			$this->fileSize = filesize($this->movieFile);
 		}
 		$this->output = $this->provider->getOutput();
-	}
-
-	/**
-	 * Getting current provider implementation
-	 *
-	 * @return OutputProvider
-	 */
-	public function getProvider() {
-		return $this->provider;
-	}
-
-	/**
-	 * Return the duration of a movie or audio file in seconds.
-	 *
-	 * @return float movie duration in seconds
-	 */
-	public function getDuration() {
-		if ($this->duration === NULL) {
-			$match = array();
-			preg_match(self::$REGEX_DURATION, $this->output, $match);
-			if (array_key_exists(1, $match) && array_key_exists(2, $match) && array_key_exists(3, $match)) {
-				$hours     = (int)$match[1];
-				$minutes   = (int)$match[2];
-				$seconds   = (int)$match[3];
-				$fractions = (float)((array_key_exists(5, $match)) ? "0.$match[5]" : 0.0);
-
-				$this->duration = (($hours * (3600)) + ($minutes * 60) + $seconds + $fractions);
-			} else {
-				$this->duration = 0.0;
-			}
-
-			return $this->duration;
-		}
-
-		return $this->duration;
-	}
-
-	/**
-	 * Return the number of frames in a movie or audio file.
-	 *
-	 * @return int
-	 */
-	public function getFrameCount() {
-		if ($this->frameCount === NULL) {
-			$this->frameCount = (int)($this->getDuration() * $this->getFrameRate());
-		}
-
-		return $this->frameCount;
-	}
-
-	/**
-	 * Return the frame rate of a movie in fps.
-	 *
-	 * @return float
-	 */
-	public function getFrameRate() {
-		if ($this->frameRate === NULL) {
-			$match = array();
-			preg_match(self::$REGEX_FRAME_RATE, $this->output, $match);
-			$this->frameRate = (float)((array_key_exists(1, $match)) ? $match[1] : 0.0);
-		}
-
-		return $this->frameRate;
-	}
-
-	/**
-	 * Return the path and name of the movie file or audio file.
-	 *
-	 * @return string
-	 */
-	public function getFilename() {
-		return $this->movieFile;
 	}
 
 	/**
@@ -384,6 +321,15 @@ class Movie implements \Serializable {
 	}
 
 	/**
+	 * Return the author field from the movie or the artist ID3 field from an mp3 file.
+	 *
+	 * @return string
+	 */
+	public function getAuthor() {
+		return $this->getArtist();
+	}
+
+	/**
 	 * Return the author field from the movie or the artist ID3 field from an mp3 file; alias $movie->getArtist()
 	 *
 	 * @return string
@@ -396,15 +342,6 @@ class Movie implements \Serializable {
 		}
 
 		return $this->artist;
-	}
-
-	/**
-	 * Return the author field from the movie or the artist ID3 field from an mp3 file.
-	 *
-	 * @return string
-	 */
-	public function getAuthor() {
-		return $this->getArtist();
 	}
 
 	/**
@@ -468,27 +405,6 @@ class Movie implements \Serializable {
 	}
 
 	/**
-	 * Return the height of the movie in pixels.
-	 *
-	 * @return int
-	 */
-	public function getFrameHeight() {
-		if ($this->frameHeight == NULL) {
-			$match = array();
-			preg_match(self::$REGEX_FRAME_WH, $this->output, $match);
-			if (array_key_exists(1, $match) && array_key_exists(2, $match)) {
-				$this->frameWidth  = (int)$match[1];
-				$this->frameHeight = (int)$match[2];
-			} else {
-				$this->frameWidth  = 0;
-				$this->frameHeight = 0;
-			}
-		}
-
-		return $this->frameHeight;
-	}
-
-	/**
 	 * Return the width of the movie in pixels.
 	 *
 	 * @return int
@@ -499,6 +415,27 @@ class Movie implements \Serializable {
 		}
 
 		return $this->frameWidth;
+	}
+
+	/**
+	 * Return the height of the movie in pixels.
+	 *
+	 * @return int
+	 */
+	public function getFrameHeight() {
+		if ($this->frameHeight == NULL) {
+			$match = array();
+			preg_match(self::$REGEX_FRAME_WH, $this->output, $match);
+			if (array_key_exists(1, $match) && array_key_exists(2, $match)) {
+				$this->frameWidth = (int)$match[1];
+				$this->frameHeight = (int)$match[2];
+			} else {
+				$this->frameWidth = 0;
+				$this->frameHeight = 0;
+			}
+		}
+
+		return $this->frameHeight;
 	}
 
 	/**
@@ -670,6 +607,15 @@ class Movie implements \Serializable {
 	}
 
 	/**
+	 * Returns the next key frame from the movie as an Frame object. Returns false if the frame was not found.
+	 *
+	 * @return Frame|boolean
+	 */
+	public function getNextKeyFrame() {
+		return $this->getFrame();
+	}
+
+	/**
 	 * Returns a frame from the movie as an Frame object. Returns false if the frame was not found.
 	 *
 	 * @param int $framenumber
@@ -697,6 +643,60 @@ class Movie implements \Serializable {
 		}
 
 		return $frame;
+	}
+
+	/**
+	 * Return the number of frames in a movie or audio file.
+	 *
+	 * @return int
+	 */
+	public function getFrameCount() {
+		if ($this->frameCount === NULL) {
+			$this->frameCount = (int)($this->getDuration() * $this->getFrameRate());
+		}
+
+		return $this->frameCount;
+	}
+
+	/**
+	 * Return the duration of a movie or audio file in seconds.
+	 *
+	 * @return float movie duration in seconds
+	 */
+	public function getDuration() {
+		if ($this->duration === NULL) {
+			$match = array();
+			preg_match(self::$REGEX_DURATION, $this->output, $match);
+			if (array_key_exists(1, $match) && array_key_exists(2, $match) && array_key_exists(3, $match)) {
+				$hours = (int)$match[1];
+				$minutes = (int)$match[2];
+				$seconds = (int)$match[3];
+				$fractions = (float)((array_key_exists(5, $match)) ? "0.$match[5]" : 0.0);
+
+				$this->duration = (($hours * (3600)) + ($minutes * 60) + $seconds + $fractions);
+			} else {
+				$this->duration = 0.0;
+			}
+
+			return $this->duration;
+		}
+
+		return $this->duration;
+	}
+
+	/**
+	 * Return the frame rate of a movie in fps.
+	 *
+	 * @return float
+	 */
+	public function getFrameRate() {
+		if ($this->frameRate === NULL) {
+			$match = array();
+			preg_match(self::$REGEX_FRAME_RATE, $this->output, $match);
+			$this->frameRate = (float)((array_key_exists(1, $match)) ? $match[1] : 0.0);
+		}
+
+		return $this->frameRate;
 	}
 
 	/**
@@ -736,7 +736,7 @@ class Movie implements \Serializable {
 		$deleteTmp = FALSE;
 		if ($frameFilePath === NULL) {
 			$frameFilePath = $this->environment->getPathToTemporaryDirectory() . uniqid('frame', TRUE) . '.jpg';
-			$deleteTmp     = TRUE;
+			$deleteTmp = TRUE;
 		}
 
 		$output = array();
@@ -776,12 +776,12 @@ class Movie implements \Serializable {
 	}
 
 	/**
-	 * Returns the next key frame from the movie as an Frame object. Returns false if the frame was not found.
+	 * Return the path and name of the movie file or audio file.
 	 *
-	 * @return Frame|boolean
+	 * @return string
 	 */
-	public function getNextKeyFrame() {
-		return $this->getFrame();
+	public function getFilename() {
+		return $this->movieFile;
 	}
 
 	public function __clone() {
@@ -789,17 +789,17 @@ class Movie implements \Serializable {
 	}
 
 	/**
-	 * @param int $fileSize
-	 */
-	public function setFileSize($fileSize) {
-		$this->fileSize = $fileSize;
-	}
-
-	/**
 	 * @return int
 	 */
 	public function getFileSize() {
 		return $this->fileSize;
+	}
+
+	/**
+	 * @param int $fileSize
+	 */
+	public function setFileSize($fileSize) {
+		$this->fileSize = $fileSize;
 	}
 
 	public function serialize() {
