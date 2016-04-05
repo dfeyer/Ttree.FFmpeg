@@ -2,7 +2,16 @@
     "name": "ttree/ffmpeg",
     "type": "typo3-flow-package",
     "description": "FFMpeg TYPO3 Flow Package, an Object Oriented library to communicate with AVconv / ffmpeg",
-    "keywords": ["video processing", "video", "audio processing", "audio", "avconv", "ffmpeg", "avprobe", "ffprobe"],
+    "keywords": [
+        "video processing",
+        "video",
+        "audio processing",
+        "audio",
+        "avconv",
+        "ffmpeg",
+        "avprobe",
+        "ffprobe"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -20,5 +29,10 @@
         "psr-0": {
             "Ttree\\FFmpeg": "Classes"
         }
+    },
+    "extra": {
+        "applied-flow-migrations": [
+            "TYPO3.FLOW3-201201261636"
+        ]
     }
 }
